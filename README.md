@@ -2,9 +2,13 @@
 
 A menu management page (Studi Kasus: Menu Management) built with **vanilla HTML, CSS and JavaScript**: no framework and no build step. The layout follows the RestoDash POS reference: sidebar, top bar, KPI row, menu grid and a Current Order panel.
 
+**Live demo: <https://sqiva-tech-test.netlify.app/>**
+
 ## Running it
 
-Open `index.html` in a browser. Or serve the folder, which is closer to how it runs when deployed:
+The app is deployed on Netlify at <https://sqiva-tech-test.netlify.app/>, so there is nothing to install to try it.
+
+To run it locally, open `index.html` in a browser. Or serve the folder, which is closer to how it runs when deployed:
 
 ```bash
 npx serve .
@@ -12,7 +16,7 @@ npx serve .
 python -m http.server
 ```
 
-To see the fallback path, open the page with `?fail=1` (for example `index.html?fail=1`). Blocking the API request in DevTools has the same effect.
+To see the fallback path, open the page with `?fail=1`, for example <https://sqiva-tech-test.netlify.app/?fail=1>. Blocking the API request in DevTools has the same effect.
 
 ## Files
 
