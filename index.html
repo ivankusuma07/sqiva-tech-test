@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Master Menu · RestoDash</title>
+  <meta name="description" content="Master Menu — kelola menu, stok, dan pesanan.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M11 7v7a3 3 0 0 0 6 0V7M14 7v18M22 7c-2 1-3 4-3 7h3v11' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#menu-grid">Lewati ke daftar menu</a>
+
+  <div class="app">
+    <!-- Sidebar: static nav, Menu is the only live page -->
+    <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+      <div class="sidebar__brand">
+        <span class="sidebar__logo"><i data-lucide="store"></i></span>
+        <span class="sidebar__label sidebar__name">RestoDash</span>
+      </div>
+      <nav>
+        <ul class="nav">
+          <li><a class="nav__link" href="#" data-inert title="Overview"><i data-lucide="layout-dashboard"></i><span class="sidebar__label">Overview</span></a></li>
+          <li><a class="nav__link" href="#" data-inert title="POS"><i data-lucide="monitor"></i><span class="sidebar__label">POS</span></a></li>
+          <li><a class="nav__link is-active" href="#" aria-current="page" title="Menu"><i data-lucide="utensils"></i><span class="sidebar__label">Menu</span></a></li>
+          <li><a class="nav__link" href="#" data-inert title="Orders"><i data-lucide="receipt"></i><span class="sidebar__label">Orders</span></a></li>
+          <li><a class="nav__link" href="#" data-inert title="Settings"><i data-lucide="settings"></i><span class="sidebar__label">Settings</span></a></li>
+        </ul>
+      </nav>
+      <a class="nav__link sidebar__logout" href="#" data-inert title="Log out"><i data-lucide="log-out"></i><span class="sidebar__label">Log out</span></a>
+    </aside>
+    <div class="backdrop" id="backdrop" hidden></div>
+
+    <div class="main">
+      <header class="topbar">
+        <button class="btn btn--icon topbar__menu" id="drawer-toggle" type="button" aria-label="Buka navigasi" aria-controls="sidebar" aria-expanded="false">
+          <i data-lucide="menu"></i>
+        </button>
+        <label class="search" for="search-input">
+          <i data-lucide="search"></i>
+          <span class="visually-hidden">Cari menu berdasarkan nama</span>
+          <input id="search-input" type="search" placeholder="Cari menu…" autocomplete="off" spellcheck="false">
+          <kbd class="search__kbd" aria-hidden="true">Ctrl K</kbd>
+        </label>
+        <div class="topbar__actions">
+          <button class="btn btn--icon" type="button" aria-label="Notifikasi" data-inert><i data-lucide="bell"></i></button>
+          <span class="avatar" aria-hidden="true"><i data-lucide="user"></i></span>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="kpis" aria-label="Ringkasan">
+          <article class="kpi">
+            <span class="kpi__icon"><i data-lucide="list"></i></span>
+            <div>
+              <p class="kpi__label">Total Menu</p>
+              <p class="kpi__value" id="kpi-total">–</p>
+              <p class="kpi__hint">semua kategori</p>
+            </div>
+          </article>
+          <article class="kpi">
+            <span class="kpi__icon kpi__icon--food"><i data-lucide="utensils"></i></span>
+            <div>
+              <p class="kpi__label">Food Ditampilkan</p>
+              <p class="kpi__value" id="kpi-shown">–</p>
+              <p class="kpi__hint">setelah filter &amp; pencarian</p>
+            </div>
+          </article>
+          <article class="kpi">
+            <span class="kpi__icon kpi__icon--low"><i data-lucide="triangle-alert"></i></span>
+            <div>
+              <p class="kpi__label">Low Stock</p>
+              <p class="kpi__value" id="kpi-low">–</p>
+              <p class="kpi__hint">stock &lt; 3, semua kategori</p>
+            </div>
+          </article>
+          <article class="kpi">
+            <span class="kpi__icon kpi__icon--money"><i data-lucide="wallet"></i></span>
+            <div>
+              <p class="kpi__label">Total Pesanan</p>
+              <p class="kpi__value" id="kpi-order">–</p>
+              <p class="kpi__hint" id="kpi-order-hint">0 item</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="page-head">
+          <div>
+            <h1 class="page-head__title">Master Menu</h1>
+            <p class="page-head__meta" id="results-note" aria-live="polite">Memuat menu…</p>
+          </div>
+          <div class="page-head__actions">
+            <span class="chip"><i data-lucide="utensils"></i>Showing Food only</span>
+            <span class="chip" id="source-chip" hidden></span>
+            <button class="btn btn--primary" id="open-create" type="button">
+              <i data-lucide="plus"></i>Tambah Menu
+            </button>
+          </div>
+        </section>
+
+        <div class="banner" id="fallback-banner" role="status" hidden>
+          <i data-lucide="wifi-off"></i>
+          <p>Gagal memuat dari server — menampilkan data lokal.</p>
+        </div>
+
+        <div class="menu-grid" id="menu-grid" aria-busy="true"></div>
+      </main>
+    </div>
+
+    <aside class="order-panel" id="order-panel" aria-labelledby="order-title">
+      <header class="order-panel__head">
+        <h2 id="order-title">Current Order</h2>
+        <span class="order-panel__count" id="order-count">0 item</span>
+      </header>
+      <ul class="order-list" id="order-list"></ul>
+      <footer class="order-summary">
+        <dl>
+          <div class="order-summary__row">
+            <dt>Total item</dt>
+            <dd id="summary-items">0</dd>
+          </div>
+          <div class="order-summary__row order-summary__row--total">
+            <dt>Total harga</dt>
+            <dd id="summary-total">Rp 0</dd>
+          </div>
+        </dl>
+        <div class="order-summary__actions">
+          <button class="btn btn--ghost" id="clear-order" type="button"><i data-lucide="x"></i>Clear</button>
+          <button class="btn btn--primary" id="checkout" type="button">Checkout</button>
+        </div>
+      </footer>
+    </aside>
+  </div>
+
+  <!-- Mobile only: sticky shortcut to the order panel -->
+  <a class="order-bar" id="order-bar" href="#order-panel" hidden>
+    <span class="order-bar__count" id="order-bar-count">0</span>
+    <span>Lihat pesanan</span>
+    <strong id="order-bar-total">Rp 0</strong>
+  </a>
+
+  <dialog class="dialog" id="menu-form-dialog" aria-labelledby="menu-form-title">
+    <form id="menu-form" novalidate>
+      <header class="dialog__head">
+        <h2 id="menu-form-title">Tambah Menu</h2>
+        <button class="btn btn--icon" type="button" data-close-dialog aria-label="Tutup"><i data-lucide="x"></i></button>
+      </header>
+
+      <div class="field">
+        <label for="field-name">Nama Menu</label>
+        <input id="field-name" name="name" type="text" maxlength="60" autocomplete="off" aria-describedby="error-name">
+        <p class="field__error" id="error-name"></p>
+      </div>
+
+      <div class="field">
+        <label for="field-category">Kategori</label>
+        <select id="field-category" name="category" aria-describedby="error-category">
+          <option value="">— Pilih —</option>
+          <option value="Food">Food</option>
+          <option value="Drink">Drink</option>
+        </select>
+        <p class="field__error" id="error-category"></p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="field-price">Harga (Rp)</label>
+          <input id="field-price" name="price" type="number" min="1" step="any" inputmode="numeric" aria-describedby="error-price">
+          <p class="field__error" id="error-price"></p>
+        </div>
+        <div class="field">
+          <label for="field-stock">Stock</label>
+          <input id="field-stock" name="stock" type="number" min="1" step="1" inputmode="numeric" aria-describedby="error-stock">
+          <p class="field__error" id="error-stock"></p>
+        </div>
+      </div>
+
+      <footer class="dialog__actions">
+        <button class="btn btn--ghost" type="button" data-close-dialog>Batal</button>
+        <button class="btn btn--primary" type="submit">Simpan</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="dialog dialog--small" id="confirm-dialog" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <header class="dialog__head">
+        <h2 id="confirm-title">Hapus menu?</h2>
+      </header>
+      <p class="dialog__text" id="confirm-text"></p>
+      <footer class="dialog__actions">
+        <button class="btn btn--ghost" value="cancel">Batal</button>
+        <button class="btn btn--danger" value="confirm"><i data-lucide="trash-2"></i>Hapus</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/lucide@1.47.0/dist/umd/lucide.min.js"
+          integrity="sha384-v15JX+vZHMR3T6LQR9N6e6wIKrKOdNTbdj8j+e5irqq3L9gCauJz2vGlUzomWyUp"
+          crossorigin="anonymous"></script>
+  <script src="app.js"></script>
+</body>
+</html>
