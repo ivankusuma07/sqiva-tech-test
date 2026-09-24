@@ -21,6 +21,7 @@ To see the fallback path, open the page with `?fail=1` (for example `index.html?
 | `index.html` | Semantic page shell: sidebar, top bar, KPI row, grid, order panel, form and confirm dialogs |
 | `styles.css` | Design tokens (CSS custom properties), layout, components, breakpoints |
 | `app.js` | State, data loading, pure domain logic, rendering, delegated events |
+| `images/` | Menu photos, 640×480 WebP (see [Image credits](#image-credits)) |
 
 ## Where each requirement lives
 
@@ -48,6 +49,7 @@ The arrays in `state` are the single source of truth. Every change goes through 
 - **D4: Edit (optional) is implemented.** It reuses the same dialog, and the matching order line's name and price stay in sync.
 - **D5: currency** is formatted with `Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })`, for example "Rp 25.000".
 - **D6: icons** are [Lucide](https://lucide.dev) 1.47.0 from unpkg, pinned and checked with SRI. Every icon-only button has an `aria-label`, so the page still works if the CDN is blocked.
+- **D7: menu photos.** The API data has no image URLs, so `getMenuImage(menu)` matches a photo by name keyword. That way "Nasi Goreng Singapore" from the API and "Nasi Goreng" from the fallback get the same photo. Menus with no match, such as new ones created in the form, get a default Food or Drink photo. If a menu has its own `image` field, that is used instead. If a photo fails to load, the category photo is used, and if that fails too, a category icon shows.
 
 ## Other details
 
@@ -60,3 +62,17 @@ The arrays in `state` are the single source of truth. Every change goes through 
   - From 1025px to 1280px, the sidebar collapses to icons so the 4 cards still fit.
   - From 1024px down, the order panel moves below the grid.
   - Below 600px, the sidebar becomes a drawer, and a sticky bar shows the order total.
+
+## Image credits
+
+All photos are from Wikimedia Commons, cropped to 4:3 and resized to 640×480.
+
+| File | Photo | Author | License |
+| --- | --- | --- | --- |
+| `nasi-goreng.webp` | [Nasi Goreng Kampung](https://commons.wikimedia.org/wiki/File:Nasi_Goreng_Kampung.jpg) | Supardisahabu | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
+| `mie-ayam.webp` | [Mi ayam jamur](https://commons.wikimedia.org/wiki/File:Mi_ayam_jamur.JPG) | Midori | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
+| `ayam-bakar.webp` | [Set menu Ayam Bakar Tempe Tahu](https://commons.wikimedia.org/wiki/File:Set_menu_Ayam_Bakar_Tempe_Tahu.jpg) | christian r from Jakarta | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
+| `es-teh.webp` | [Es teh manis](https://commons.wikimedia.org/wiki/File:Es_teh_manis.jpg) | Cendy00 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) |
+| `jus-alpukat.webp` | [Jus alpukat Bandung](https://commons.wikimedia.org/wiki/File:Jus_alpukat_Bandung.JPG) | Midori | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) |
+| `default-food.webp` | [Nasi campur, Ubud, Indonesia](https://commons.wikimedia.org/wiki/File:Nasi_campur,_Ubud,_Indonesia.jpg) | Vyacheslav Argenberg | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) |
+| `default-drink.webp` | [Pineapple Juice fruits](https://commons.wikimedia.org/wiki/File:Pineapple_Juice_fruits-465832.jpg) | public domain | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) |

@@ -29,6 +29,21 @@ const FALLBACK_MENUS = [
   { id: 5, name: 'Ayam Bakar', category: 'Food', price: 30000, stock: 5 },
 ];
 
+// The data has no image URLs, so photos are matched by name keyword. That way the
+// API name ("Nasi Goreng Singapore") and the fallback name ("Nasi Goreng") share one.
+// Photos are from Wikimedia Commons; credits are in the README.
+const MENU_IMAGES = [
+  { keyword: 'nasi goreng', src: 'images/nasi-goreng.webp' },
+  { keyword: 'mie ayam', src: 'images/mie-ayam.webp' },
+  { keyword: 'ayam bakar', src: 'images/ayam-bakar.webp' },
+  { keyword: 'es teh', src: 'images/es-teh.webp' },
+  { keyword: 'jus alpukat', src: 'images/jus-alpukat.webp' },
+];
+const DEFAULT_IMAGES = {
+  Food: 'images/default-food.webp',
+  Drink: 'images/default-drink.webp',
+};
+
 /* 2. State ----------------------------------------------------------------- */
 
 // The arrays are the single source of truth; the UI is always derived from them.
@@ -92,6 +107,18 @@ function calculateTotal(order) {
 
 function calculateItemCount(order) {
   return order.reduce((sum, item) => sum + item.qty, 0);
+}
+
+function getDefaultImage(category) {
+  return DEFAULT_IMAGES[category] || DEFAULT_IMAGES.Food;
+}
+
+// An `image` field on the menu wins; otherwise match by name, then fall back to the category photo.
+function getMenuImage(menu) {
+  if (menu.image) return menu.image;
+  const name = menu.name.toLowerCase();
+  const match = MENU_IMAGES.find((entry) => name.includes(entry.keyword));
+  return match ? match.src : getDefaultImage(menu.category);
 }
 
 function countLowStock(menus) {
@@ -323,17 +350,30 @@ function renderStats() {
     : `Menampilkan ${foodCount} menu Food, harga tertinggi lebih dulu`;
 }
 
+// URLs that already failed once, so re-renders go straight to the fallback.
+const brokenImages = new Set();
+
+// Decorative (alt=""): the menu name sits right next to it. data-fallback is the
+// category photo that handleImageError swaps in if this one fails to load.
+function menuImageTemplate(menu, className) {
+  const fallback = getDefaultImage(menu.category);
+  const src = getMenuImage(menu);
+  return `<img class="${className}" src="${escapeHTML(brokenImages.has(src) ? fallback : src)}"
+               data-fallback="${fallback}" alt="" width="640" height="480"
+               loading="lazy" decoding="async">`;
+}
+
 function menuCardTemplate(menu) {
   const name = escapeHTML(menu.name);
   const soldOut = menu.stock <= 0;
   const isDrink = menu.category === 'Drink';
+  const modifiers = `${menu.isLowStock ? ' menu-card--low' : ''}${soldOut ? ' menu-card--sold-out' : ''}`;
 
   return `
-    <article class="menu-card${menu.isLowStock ? ' menu-card--low' : ''}">
-      <div class="menu-card__top">
-        <span class="menu-card__tile${isDrink ? ' menu-card__tile--drink' : ''}">
-          <i data-lucide="${isDrink ? 'cup-soda' : 'utensils'}"></i>
-        </span>
+    <article class="menu-card${modifiers}">
+      <div class="menu-card__media${isDrink ? ' menu-card__media--drink' : ''}">
+        <i data-lucide="${isDrink ? 'cup-soda' : 'utensils'}"></i>
+        ${menuImageTemplate(menu, 'menu-card__img')}
         <div class="menu-card__tools">
           <button class="btn btn--icon" type="button" data-action="edit" data-id="${menu.id}"
                   aria-label="Edit ${name}" title="Edit"><i data-lucide="pencil"></i></button>
@@ -341,26 +381,28 @@ function menuCardTemplate(menu) {
                   aria-label="Delete ${name}" title="Delete"><i data-lucide="trash-2"></i></button>
         </div>
       </div>
-      <h3 class="menu-card__name">${name}</h3>
-      <p class="menu-card__category">${escapeHTML(menu.category)}</p>
-      <p class="menu-card__price">${formatRupiah(menu.price)}</p>
-      <div class="menu-card__meta">
-        <span>Stock: <strong>${menu.stock}</strong></span>
-        ${menu.isLowStock
-          ? '<span class="badge badge--low"><i data-lucide="triangle-alert"></i>Low Stock</span>'
-          : '<span class="badge badge--normal">Normal</span>'}
+      <div class="menu-card__body">
+        <h3 class="menu-card__name">${name}</h3>
+        <p class="menu-card__category">${escapeHTML(menu.category)}</p>
+        <p class="menu-card__price">${formatRupiah(menu.price)}</p>
+        <div class="menu-card__meta">
+          <span>Stock: <strong>${menu.stock}</strong></span>
+          ${menu.isLowStock
+            ? '<span class="badge badge--low"><i data-lucide="triangle-alert"></i>Low Stock</span>'
+            : '<span class="badge badge--normal">Normal</span>'}
+        </div>
+        <button class="btn btn--primary btn--block" type="button" data-action="add" data-id="${menu.id}"
+                ${soldOut ? 'disabled' : ''} aria-label="${soldOut ? `${name} habis` : `Add ${name} ke pesanan`}">
+          ${soldOut ? 'Habis' : '<i data-lucide="shopping-cart"></i>Add'}
+        </button>
       </div>
-      <button class="btn btn--primary btn--block" type="button" data-action="add" data-id="${menu.id}"
-              ${soldOut ? 'disabled' : ''} aria-label="${soldOut ? `${name} habis` : `Add ${name} ke pesanan`}">
-        ${soldOut ? 'Habis' : '<i data-lucide="shopping-cart"></i>Add'}
-      </button>
     </article>`;
 }
 
 function skeletonTemplate() {
   return `
     <div class="skeleton" aria-hidden="true">
-      <div class="skeleton__block" style="width:48px;height:48px;border-radius:12px"></div>
+      <div class="skeleton__block skeleton__media"></div>
       <div class="skeleton__block" style="width:75%;height:16px"></div>
       <div class="skeleton__block" style="width:40%;height:12px"></div>
       <div class="skeleton__block" style="width:55%;height:18px"></div>
@@ -406,6 +448,7 @@ function orderLineTemplate(line) {
 
   return `
     <li class="order-line">
+      <span class="order-line__thumb">${menu ? menuImageTemplate(menu, 'order-line__img') : ''}</span>
       <div>
         <p class="order-line__name">${name}</p>
         <p class="order-line__unit">${formatRupiah(line.price)} × ${line.qty}</p>
@@ -639,6 +682,17 @@ function handleOrderClick(event) {
   }
 }
 
+// A missing photo falls back to the category photo once; if that fails too, the
+// image is hidden and the category icon behind it shows through.
+function handleImageError(event) {
+  const img = event.target;
+  if (!(img instanceof HTMLImageElement) || !img.dataset.fallback) return;
+  const src = img.getAttribute('src');
+  brokenImages.add(src);
+  if (src !== img.dataset.fallback) img.src = img.dataset.fallback;
+  else img.hidden = true;
+}
+
 function setDrawer(open) {
   dom.sidebar.classList.toggle('is-open', open);
   dom.backdrop.hidden = !open;
@@ -649,6 +703,8 @@ function setDrawer(open) {
 
 function bindEvents() {
   dom.grid.addEventListener('click', handleGridClick);
+  // Image errors don't bubble, so listen in the capture phase.
+  document.addEventListener('error', handleImageError, true);
   dom.orderList.addEventListener('click', handleOrderClick);
 
   dom.clearOrder.addEventListener('click', () => {

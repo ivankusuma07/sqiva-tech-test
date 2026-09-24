@@ -308,40 +308,62 @@ a { color: inherit; text-decoration: none; }
 .menu-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
   min-width: 0;
+  overflow: hidden;
   container-type: inline-size;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .menu-card:hover { border-color: var(--color-border-strong); box-shadow: 0 4px 12px -4px rgb(17 24 39 / 0.12); }
 
-.menu-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.menu-card__tile {
+/* The category icon sits under the photo and shows through only if the photo fails. */
+.menu-card__media {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius);
+  aspect-ratio: 4 / 3;
   background: var(--color-warning-soft);
   color: var(--color-warning);
-  flex-shrink: 0;
 }
-.menu-card__tile .lucide { width: 24px; height: 24px; }
-.menu-card__tile--drink { background: var(--color-info-soft); color: var(--color-info); }
+.menu-card__media > .lucide { width: 32px; height: 32px; }
+.menu-card__media--drink { background: var(--color-info-soft); color: var(--color-info); }
 
-.menu-card__tools { display: flex; gap: 4px; }
+.menu-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease-out;
+}
+.menu-card:hover .menu-card__img { transform: scale(1.04); }
+.menu-card--sold-out .menu-card__img { filter: grayscale(1); opacity: 0.55; }
+
+.menu-card__tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+.menu-card__tools .btn--icon {
+  border-color: transparent;
+  background: rgb(255 255 255 / 0.92);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+.menu-card__tools .btn--icon:hover:not(:disabled) { background: #fff; }
+
+.menu-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 4px;
+  padding: 12px 14px 14px;
+}
 
 .menu-card__name {
   font-size: 15px;
@@ -373,11 +395,11 @@ a { color: inherit; text-decoration: none; }
 
 .menu-card .btn--block { margin-top: auto; }
 
-/* Narrow cards (4 columns just above 1024px): shrink the tile and tool buttons to fit one row */
-@container (max-width: 150px) {
-  .menu-card__tile { width: 36px; height: 36px; border-radius: 10px; }
-  .menu-card__tile .lucide { width: 20px; height: 20px; }
+/* Narrow cards (4 columns just above 1024px): smaller tool buttons over the photo */
+@container (max-width: 170px) {
+  .menu-card__tools { top: 6px; right: 6px; }
   .menu-card__tools .btn--icon { width: 30px; height: 30px; }
+  .menu-card__body { padding: 10px 12px 12px; }
 }
 
 /* 7. Order panel ----------------------------------------------------------- */
@@ -418,12 +440,22 @@ a { color: inherit; text-decoration: none; }
 
 .order-line {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   gap: 8px 12px;
   padding: 14px 0;
   border-bottom: 1px solid var(--color-border);
 }
 .order-line:last-child { border-bottom: 0; }
+
+.order-line__thumb {
+  grid-row: span 2;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+.order-line__img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 .order-line__name { font-weight: 600; overflow-wrap: anywhere; }
 .order-line__unit { color: var(--color-text-muted); font-size: 13px; }
@@ -668,7 +700,9 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
+  overflow: hidden;
 }
+.skeleton__media { aspect-ratio: 4 / 3; margin: -14px -14px 4px; border-radius: 0; }
 .skeleton__block {
   border-radius: 6px;
   background: linear-gradient(90deg, #eef0f4 25%, #f7f8fa 50%, #eef0f4 75%);
@@ -771,6 +805,8 @@ a { color: inherit; text-decoration: none; }
   .page-head__actions .btn { margin-left: auto; }
 
   .menu-grid { grid-template-columns: 1fr; }
+  .menu-card__media,
+  .skeleton__media { aspect-ratio: 16 / 9; }
 
   .order-panel { margin: 0 var(--gutter) 88px; }
 
