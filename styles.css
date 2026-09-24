@@ -555,12 +555,12 @@ a { color: inherit; text-decoration: none; }
 }
 .dialog--small { width: min(400px, calc(100vw - 32px)); }
 .dialog::backdrop { background: rgb(17 24 39 / 0.45); }
-.dialog form { display: flex; flex-direction: column; gap: 16px; padding: 20px 24px 24px; }
+.dialog form { display: flex; flex-direction: column; gap: 10px; padding: 20px 24px 24px; }
 
-.dialog__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dialog__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
 .dialog__head h2 { font-size: 18px; font-weight: 700; }
 .dialog__text { color: var(--color-text-muted); }
-.dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field label { font-weight: 600; font-size: 13px; }
@@ -581,11 +581,10 @@ a { color: inherit; text-decoration: none; }
 }
 .field [aria-invalid="true"] { border-color: var(--color-danger); }
 .field [aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--color-danger-soft); }
-.field__error { min-height: 18px; color: var(--color-danger-strong); font-size: 12px; }
+/* The error line keeps its height when empty, so fields don't jump when messages appear. */
+.field__error { min-height: 16px; color: var(--color-danger-strong); font-size: 12px; line-height: 16px; }
 
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.dialog .field + .field,
-.dialog .field + .field-row { margin-top: -8px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
 
 /* 10. Toasts & states ------------------------------------------------------ */
 .toasts {
